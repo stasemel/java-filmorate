@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 /**
@@ -30,7 +29,7 @@ public class Film {
 
     private LocalDate releaseDate;
 
-    private Duration duration;
+    private Integer duration;
 
     public boolean validate() {
         if ((getName() == null) || (getName().isBlank())) {
@@ -39,7 +38,7 @@ public class Film {
         if ((getDescription() != null) && (getDescription().length() > DESCRIPTION_MAX_LENGTH)) {
             throw new ValidationException(String.format("Описание не должно превышать %d символов", 200));
         }
-        if ((getDuration() != null) && (getDuration().toMinutesPart() < 0)) {
+        if ((getDuration() != null) && (getDuration() < 0)) {
             throw new ValidationException("Продолжитеьность фильма должна быть положительным числом");
         }
         if ((getReleaseDate() != null) && (getReleaseDate().isBefore(MIN_RELEASE_DATE))) {

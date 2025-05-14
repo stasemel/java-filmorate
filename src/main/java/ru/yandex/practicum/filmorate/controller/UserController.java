@@ -42,7 +42,7 @@ public class UserController {
             log.warn("POST error: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
-        // сохраняем нового пользователя
+        if ((user.getName() == null) || (user.getName().isBlank())) user.setName(user.getLogin());
         addNewUser(user);
         log.info("Create user: {}", user);
         return user;
