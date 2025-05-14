@@ -24,7 +24,7 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
 
-    public Boolean validate() {
+    public boolean validate() {
         if ((getEmail() == null) || (getEmail().isBlank())) {
             throw new ValidationException("Email не должен быть пустым");
         }
@@ -40,7 +40,7 @@ public class User {
         return true;
     }
 
-    public User clone() {
+    public User cloneUser() {
         User user = new User();
         user.setLogin(getLogin());
         user.setId(getId());
