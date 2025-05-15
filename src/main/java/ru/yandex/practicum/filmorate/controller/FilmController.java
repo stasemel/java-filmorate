@@ -62,6 +62,11 @@ public class FilmController {
             log.warn("PUT error: film not found by id {}", film.getId());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден пользователь с таким Id");
         }
+        if ((film.getName() == null) && (film.getDuration() == null) && (film.getDescription() == null)
+                && (film.getReleaseDate() == null)) {
+            log.warn("PUT error: no data to change {}", film);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нет данных для изменения");
+        }
         Film cloneFilm = films.get(film.getId()).cloneFilm();
         if (film.getName() != null) cloneFilm.setName(film.getName());
         if (film.getDescription() != null) cloneFilm.setDescription(film.getDescription());
@@ -95,7 +100,9 @@ public class FilmController {
     }
 
     private boolean isNotDuplicate(Film film) {
-        if ((films.values().stream().anyMatch(film1 -> film1.equals(film) && (film1.getId().equals(film.getId()))))) {
+        if (films.values().stream()
+                .anyMatch(film1 ->
+                        film1.equals(film) && ((film.getId() == null) || (!film1.getId().equals(film.getId()))))) {
             throw new ValidationException("Уже есть такой фильм в коллекции");
         }
         return true;

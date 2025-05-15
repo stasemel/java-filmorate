@@ -69,10 +69,10 @@ public class UserController {
         String email = user.getEmail();
         String login = user.getLogin();
         Integer id = user.getId();
-        if (emails.containsKey(email) && (emails.get(email).getId().equals(id))) {
+        if (emails.containsKey(email) && ((id == null) || (!emails.get(email).getId().equals(id)))) {
             throw new ValidationException("Пользователь с таким email уже существует");
         }
-        if (logins.containsKey(login) && (logins.get(email).getId().equals(id))) {
+        if (logins.containsKey(login) && ((id == null) || (!logins.get(login).getId().equals(id)))) {
             throw new ValidationException("Пользователь с таким логином уже существует");
         }
         return true;
@@ -88,6 +88,10 @@ public class UserController {
         if (!users.containsKey(user.getId())) {
             log.warn("PUT error: user not found by id {}", user.getId());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден пользователь с таким Id");
+        }
+        if ((user.getName() == null) && (user.getEmail() == null) && (user.getLogin() == null) && (user.getBirthday() == null)) {
+            log.warn("PUT error: no data to change {}", user);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нет данных для изменения");
         }
         User cloneUser = users.get(user.getId()).cloneUser();
         if (user.getEmail() != null) cloneUser.setEmail(user.getEmail());
