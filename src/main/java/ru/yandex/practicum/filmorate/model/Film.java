@@ -39,7 +39,7 @@ public class Film {
             throw new ValidationException(String.format("Описание не должно превышать %d символов", 200));
         }
         if ((getDuration() != null) && (getDuration() < 0)) {
-            throw new ValidationException("Продолжитеьность фильма должна быть положительным числом");
+            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
         if ((getReleaseDate() != null) && (getReleaseDate().isBefore(MIN_RELEASE_DATE))) {
             throw new ValidationException(String.format("Дата релиза не может быть раньше %s", MIN_RELEASE_DATE));
