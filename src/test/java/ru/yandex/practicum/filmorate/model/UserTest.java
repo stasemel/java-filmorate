@@ -20,10 +20,12 @@ class UserTest {
         user.setLogin("user1");
         user.setBirthday(LocalDate.now().minusYears(25));
     }
+
     @Test
     void validateCorrectUser() {
-        assertTrue(user.validate(),"Не прошла валидация корректного пользователя");
+        assertTrue(user.validate(), "Не прошла валидация корректного пользователя");
     }
+
     @Test
     void validateLogin() {
         user.setLogin(null);
@@ -37,6 +39,7 @@ class UserTest {
         assertEquals("Логин не может быть пустым или содержать пробелы", exception2.getMessage(),
                 "Не совпадает текст ошибки проверки пустого логина");
     }
+
     @Test
     void validateBirthday() {
         user.setBirthday(LocalDate.now().plusDays(1));
@@ -45,6 +48,7 @@ class UserTest {
         assertEquals("Дата рождения не может быть больше текущей даты", exception.getMessage(),
                 "Не совпадает текст ошибки проверки дня рождения");
     }
+
     @Test
     void validateEmail() {
         user.setEmail(null);

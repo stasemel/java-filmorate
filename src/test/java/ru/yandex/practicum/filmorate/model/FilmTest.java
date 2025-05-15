@@ -24,7 +24,7 @@ class FilmTest {
 
     @Test
     void validateCorrectFilm() {
-        assertTrue(film.validate(),"Не прошла валидация корректного фильма");
+        assertTrue(film.validate(), "Не прошла валидация корректного фильма");
     }
 
     @Test
