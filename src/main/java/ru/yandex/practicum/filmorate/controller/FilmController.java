@@ -4,18 +4,14 @@ import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -60,7 +56,8 @@ public class FilmController {
         }
         if (!films.containsKey(film.getId())) {
             log.warn("PUT error: film not found by id {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден пользователь с таким Id");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    String.format("Не найден пользователь с Id %d", film.getId()));
         }
         if ((film.getName() == null) && (film.getDuration() == null) && (film.getDescription() == null)
                 && (film.getReleaseDate() == null)) {
@@ -100,10 +97,14 @@ public class FilmController {
     }
 
     private boolean isNotDuplicate(Film film) {
-        if (films.values().stream()
-                .anyMatch(film1 ->
-                        film1.equals(film) && ((film.getId() == null) || (!film1.getId().equals(film.getId()))))) {
-            throw new ValidationException("Уже есть такой фильм в коллекции");
+        List<Film> duplicatedFilms = films.values().stream()
+                .filter(film1 ->
+                        film1.equals(film) && ((film.getId() == null) || (!film1.getId().equals(film.getId()))))
+                .toList();
+        if (!duplicatedFilms.isEmpty()) {
+            throw new ValidationException(String.format("Уже есть фильм '%s' в коллекции c id = %d",
+                    duplicatedFilms.getFirst().getName(),
+                    duplicatedFilms.getFirst().getId()));
         }
         return true;
     }

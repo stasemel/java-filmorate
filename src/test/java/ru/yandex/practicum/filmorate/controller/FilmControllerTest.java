@@ -59,7 +59,7 @@ class FilmControllerTest {
                 "Не отработала проверка повтора регистрации фильма");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса проверки повтора регистрации фильма");
-        assertEquals("Уже есть такой фильм в коллекции", exception.getReason(),
+        assertEquals("Уже есть фильм 'Film 123' в коллекции c id = 1", exception.getReason(),
                 "Некорректная причина ошибки проверки повтора регистрации фильма");
     }
 
@@ -196,7 +196,7 @@ class FilmControllerTest {
                 "Не отработала проверка изменения с некорректной датой релиза");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса изменения с некорректной датой релиза");
-        assertEquals("Уже есть такой фильм в коллекции", exception.getReason(),
+        assertEquals("Уже есть фильм 'Film 123' в коллекции c id = 2", exception.getReason(),
                 "Некорректная причина изменения с некорректной датой релиза");
     }
 
@@ -208,7 +208,7 @@ class FilmControllerTest {
                 "Не отработала проверка изменения с некорректным id");
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode(),
                 "Некорректный код статуса изменения с некорректной датой релиза");
-        assertEquals("Не найден пользователь с таким Id", exception.getReason(),
+        assertEquals("Не найден пользователь с Id 123", exception.getReason(),
                 "Некорректная причина изменения с некорректной датой релиза");
     }
 }

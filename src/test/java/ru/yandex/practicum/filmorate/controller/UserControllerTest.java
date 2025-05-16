@@ -85,7 +85,7 @@ class UserControllerTest {
                 "Не отработала проверка повтора email");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса проверки повтора email");
-        assertEquals("Пользователь с таким email уже существует", exception.getReason(),
+        assertEquals("Пользователь с email mail10@yandex.ru уже существует", exception.getReason(),
                 "Некорректная причина ошибки проверки повтора email");
     }
 
@@ -99,7 +99,7 @@ class UserControllerTest {
                 "Не отработала проверка повтора email");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса проверки повтора login");
-        assertEquals("Пользователь с таким логином уже существует", exception.getReason(),
+        assertEquals("Пользователь с логином user10 уже существует", exception.getReason(),
                 "Некорректная причина ошибки проверки повтора login");
     }
 
@@ -128,8 +128,10 @@ class UserControllerTest {
         User updateUser = new User();
         updateUser.setId(createdUser.getId());
         updateUser.setName("Новое имя");
-        controller.update(updateUser);
+        User updatedUser = controller.update(updateUser);
         assertEquals("Новое имя", controller.getUsers().get(updateUser.getId()).getName(),
+                "Не изменилось имя при обновлении");
+        assertEquals("Новое имя", updatedUser.getName(),
                 "Не изменилось имя при обновлении");
     }
 
@@ -188,7 +190,7 @@ class UserControllerTest {
                 "Не отработала проверка повтора email");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса проверки повтора email");
-        assertEquals("Пользователь с таким email уже существует", exception.getReason(),
+        assertEquals("Пользователь с email mail10@yandex.ru уже существует", exception.getReason(),
                 "Некорректная причина ошибки проверки повтора email");
     }
 
@@ -203,7 +205,7 @@ class UserControllerTest {
                 "Не отработала проверка повтора логина");
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(),
                 "Некорректный код статуса проверки повтора логина");
-        assertEquals("Пользователь с таким логином уже существует", exception.getReason(),
+        assertEquals("Пользователь с логином user10 уже существует", exception.getReason(),
                 "Некорректная причина ошибки проверки повтора логина");
     }
 

@@ -4,12 +4,7 @@ import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -70,10 +65,10 @@ public class UserController {
         String login = user.getLogin();
         Integer id = user.getId();
         if (emails.containsKey(email) && ((id == null) || (!emails.get(email).getId().equals(id)))) {
-            throw new ValidationException("Пользователь с таким email уже существует");
+            throw new ValidationException(String.format("Пользователь с email %s уже существует", email));
         }
         if (logins.containsKey(login) && ((id == null) || (!logins.get(login).getId().equals(id)))) {
-            throw new ValidationException("Пользователь с таким логином уже существует");
+            throw new ValidationException(String.format("Пользователь с логином %s уже существует", login));
         }
         return true;
     }
@@ -87,7 +82,7 @@ public class UserController {
         }
         if (!users.containsKey(user.getId())) {
             log.warn("PUT error: user not found by id {}", user.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден пользователь с таким Id");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Не найден пользователь с id %d", user.getId()));
         }
         if ((user.getName() == null) && (user.getEmail() == null) && (user.getLogin() == null) && (user.getBirthday() == null)) {
             log.warn("PUT error: no data to change {}", user);
