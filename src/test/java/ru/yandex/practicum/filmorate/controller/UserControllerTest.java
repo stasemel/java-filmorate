@@ -10,6 +10,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserControllerTest {
     UserController controller = new UserController();
@@ -17,9 +18,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller.getUsers().clear();
-        controller.getEmails().clear();
-        controller.getLogins().clear();
+        controller.getService().getStorage().clearUsers();
         user.setName("Имя пользователя");
         user.setEmail("mail@yandex.ru");
         user.setLogin("user");
@@ -39,7 +38,7 @@ class UserControllerTest {
     void createUser() {
         User createdUser = controller.create(user);
         assertEquals(createdUser, user, "Не совпадают пользователи");
-        assertEquals(1, controller.getUsers().size(), "Не добавился пользователь");
+        assertEquals(1, controller.findAll().size(), "Не добавился пользователь");
     }
 
     @Test
@@ -129,7 +128,8 @@ class UserControllerTest {
         updateUser.setId(createdUser.getId());
         updateUser.setName("Новое имя");
         User updatedUser = controller.update(updateUser);
-        assertEquals("Новое имя", controller.getUsers().get(updateUser.getId()).getName(),
+        assertTrue(controller.getService().getStorage().getUserById(updateUser.getId()).isPresent(), "Не обнаружен пользователь");
+        assertEquals("Новое имя", controller.getService().getStorage().getUserById(updateUser.getId()).get().getName(),
                 "Не изменилось имя при обновлении");
         assertEquals("Новое имя", updatedUser.getName(),
                 "Не изменилось имя при обновлении");

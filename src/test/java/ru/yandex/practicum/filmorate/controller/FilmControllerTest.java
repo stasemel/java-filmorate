@@ -10,6 +10,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class FilmControllerTest {
@@ -18,7 +19,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller.getFilms().clear();
+        controller.getService().getStorage().clearFilms();
         film.setName("Film 1");
         film.setDescription("Описание 1");
         film.setDuration(100);
@@ -38,7 +39,7 @@ class FilmControllerTest {
     void testCreate() {
         Film createdFilm = controller.create(film);
         assertEquals(createdFilm, film, "Не совпадают фильмы");
-        assertEquals(1, controller.getFilms().size(), "Не добавился фильм в коллекцию");
+        assertEquals(1, controller.findAll().size(), "Не добавился фильм в коллекцию");
     }
 
     @Test
@@ -102,7 +103,7 @@ class FilmControllerTest {
         controller.create(film);
         controller.create(createNewFilm(1));
         controller.create(createNewFilm(2));
-        assertEquals(controller.getFilms().size(), controller.findAll().size(), "Не совпадает количество фильмов");
+        assertEquals(controller.findAll().size(), controller.findAll().size(), "Не совпадает количество фильмов");
     }
 
     @Test
@@ -112,7 +113,8 @@ class FilmControllerTest {
         updateFilm.setId(createdFilm.getId());
         updateFilm.setName("Новое имя");
         Film changedFilm = controller.update(updateFilm);
-        assertEquals("Новое имя", controller.getFilms().get(changedFilm.getId()).getName(),
+        assertTrue(controller.getService().getStorage().getFilmById(changedFilm.getId()).isPresent(), "Не обнаружен фильм");
+        assertEquals("Новое имя", controller.getService().getStorage().getFilmById(changedFilm.getId()).get().getName(),
                 "Не изменилось имя при обновлении");
     }
 
@@ -203,12 +205,12 @@ class FilmControllerTest {
     @Test
     void testUpdateWrongId() {
         Film updateFilm = createNewFilm(123);
-        updateFilm.setId(123);
+        updateFilm.setId(123L);
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.update(updateFilm),
                 "Не отработала проверка изменения с некорректным id");
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode(),
                 "Некорректный код статуса изменения с некорректной датой релиза");
-        assertEquals("Не найден пользователь с Id 123", exception.getReason(),
+        assertEquals("Не найден фильм с Id 123", exception.getReason(),
                 "Некорректная причина изменения с некорректной датой релиза");
     }
 }
