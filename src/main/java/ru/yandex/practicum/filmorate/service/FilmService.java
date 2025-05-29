@@ -8,9 +8,11 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SaveException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,12 +21,13 @@ import java.util.Optional;
 public class FilmService {
 
     private final FilmStorage storage;
+    private final UserService userService;
 
     @Autowired
-    public FilmService(FilmStorage storage) {
+    public FilmService(FilmStorage storage, UserService service) {
         this.storage = storage;
+        this.userService = service;
     }
-
 
     public Film createFilm(Film film) {
         try {
@@ -38,8 +41,8 @@ public class FilmService {
             log.debug("Create film validation error: {}, user: {}", e, film);
             log.warn("Create film validation error: {}", e.getMessage());
             throw new ValidationException(e.getMessage());
-        }catch (RuntimeException e){
-            log.warn("Create film runtime error {}",e.getMessage());
+        } catch (RuntimeException e) {
+            log.warn("Create film runtime error {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         // сохраняем нового пользователя
@@ -96,6 +99,37 @@ public class FilmService {
         }
         log.info("Update user: {}", cloneFilm);
         return optionalSavedFilm.get();
+    }
+
+    public void likeFilmByUser(Long userId, Long filmId) {
+        Optional<Film> optionalFilm = storage.getFilmById(filmId);
+        if (optionalFilm.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден фильм с id %d", filmId));
+        }
+        Optional<User> optionalUser = userService.getStorage().getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        storage.likeFilmByUser(userId, filmId);
+        userService.getStorage().likeFilmByUser(userId, filmId);
+    }
+
+    public void deleteLikeFilmByUser(Long userId, Long filmId) {
+        Optional<Film> optionalFilm = storage.getFilmById(filmId);
+        if (optionalFilm.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден фильм с id %d", filmId));
+        }
+        Optional<User> optionalUser = userService.getStorage().getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        storage.deleteLikeFilmByUser(userId, filmId);
+        userService.getStorage().deleteLikeFilmByUser(userId, filmId);
+    }
+
+    public List<Film> getMostPopular(int count) {
+        if (count == 0) count = 10;
+        return storage.getMostPopular(count);
     }
 
     private boolean validate(Film film) {

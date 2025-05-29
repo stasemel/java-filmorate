@@ -2,20 +2,23 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Repository
 @Getter
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
     private final Map<String, User> emails = new HashMap<>();
     private final Map<String, User> logins = new HashMap<>();
 
@@ -40,11 +43,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getUserById(int id) {
+    public Optional<User> getUserById(Long id) {
         if (users.containsKey(id)) {
             return Optional.of(users.get(id).cloneUser());
         }
-        return Optional.empty();
+        throw new NotFoundException(String.format("Не найден пользователь с id %d", id));
     }
 
     private void addNewUser(User user) {
@@ -61,7 +64,7 @@ public class InMemoryUserStorage implements UserStorage {
     public boolean isNotDuplicate(User user) {
         String email = user.getEmail();
         String login = user.getLogin();
-        Integer id = user.getId();
+        Long id = user.getId();
         if (emails.containsKey(email) && ((id == null) || (!emails.get(email).getId().equals(id)))) {
             throw new ValidationException(String.format("Пользователь с email %s уже существует", email));
         }
@@ -78,10 +81,81 @@ public class InMemoryUserStorage implements UserStorage {
         logins.clear();
     }
 
-    private int getNextId() {
-        int currentMaxId = users.keySet()
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalFriend = getUserById(friendId);
+        if (optionalFriend.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+        }
+        users.get(userId).getFriends().add(friendId);
+        users.get(friendId).getFriends().add(userId);
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalFriend = getUserById(friendId);
+        if (optionalFriend.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+        }
+        users.get(userId).getFriends().remove(friendId);
+        users.get(friendId).getFriends().remove(userId);
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        return optionalUser.get().getFriends().stream().map(users::get).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherUserId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalOtherUser = getUserById(otherUserId);
+        if (optionalOtherUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", otherUserId));
+        }
+        return optionalUser.get().getFriends().stream()
+                .filter(id -> optionalOtherUser.get().getFriends().contains(id))
+                .map(users::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void likeFilmByUser(Long userId, Long filmId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        optionalUser.get().getLikedFilms().add(filmId);
+    }
+
+    @Override
+    public void deleteLikeFilmByUser(Long userId, Long filmId) {
+        Optional<User> optionalUser = getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        optionalUser.get().getLikedFilms().remove(filmId);
+    }
+
+    private Long getNextId() {
+        long currentMaxId = users.keySet()
                 .stream()
-                .mapToInt(id -> id)
+                .mapToLong(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;

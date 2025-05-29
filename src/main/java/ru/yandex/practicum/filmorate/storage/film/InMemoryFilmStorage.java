@@ -1,17 +1,20 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.ToString;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Component
+@Repository
 @ToString
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
@@ -48,6 +51,29 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void clearFilms() {
         films.clear();
+    }
+
+    @Override
+    public void likeFilmByUser(Long userId, Long filmId) {
+        if (!films.containsKey(filmId)) {
+            throw new NotFoundException(String.format("Не найден фильм с id %d", filmId));
+        }
+        films.get(filmId).getLikes().add(userId);
+    }
+
+    @Override
+    public void deleteLikeFilmByUser(Long userId, Long filmId) {
+        if (!films.containsKey(filmId)) {
+            throw new NotFoundException(String.format("Не найден фильм с id %d", filmId));
+        }
+        films.get(filmId).getLikes().remove(userId);
+    }
+
+    @Override
+    public List<Film> getMostPopular(int count) {
+        if (count == 0) count = 10;
+        Comparator<Film> likeComparator = (f1, f2) -> f2.getLikes().size() - f1.getLikes().size();
+        return films.values().stream().sorted(likeComparator).map(Film::cloneFilm).limit(count).collect(Collectors.toList());
     }
 
     @Override

@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -76,7 +77,7 @@ public class UserService {
             log.warn("Update user validation error: {}", e.getMessage());
             log.debug("Update user validation error: {}, user: {}", e, user);
             throw new ValidationException(e.getMessage());
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             log.debug("Update user validation runtime error: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
@@ -98,4 +99,47 @@ public class UserService {
         return storage.isNotDuplicate(user);
     }
 
+    public void addFriend(Long userId, Long friendId) {
+        Optional<User> optionalUser = storage.getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalFriend = storage.getUserById(friendId);
+        if (optionalFriend.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+        }
+        storage.addFriend(userId, friendId);
+    }
+
+    public void deleteFriend(Long userId, Long friendId) {
+        Optional<User> optionalUser = storage.getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalFriend = storage.getUserById(friendId);
+        if (optionalFriend.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+        }
+        storage.deleteFriend(userId, friendId);
+    }
+
+    public List<User> getCommonFriends(Long userId, Long otherUserId) {
+        Optional<User> optionalUser = storage.getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        Optional<User> optionalOtherUser = storage.getUserById(otherUserId);
+        if (optionalOtherUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", otherUserId));
+        }
+        return storage.getCommonFriends(userId, otherUserId);
+    }
+
+    public List<User> getFriends(Long userId) {
+        Optional<User> optionalUser = storage.getUserById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+        }
+        return storage.getFriends(userId);
+    }
 }

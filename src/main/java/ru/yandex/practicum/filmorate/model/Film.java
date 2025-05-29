@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -18,6 +20,8 @@ public class Film {
     public static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     @EqualsAndHashCode.Exclude
     private Long id;
+
+    private final Set<Long> likes = new HashSet<>();
 
     @NotBlank(message = "Название фильма должно быть указано")
     @NotEmpty(message = "Название фильма должно быть указано")
@@ -54,6 +58,7 @@ public class Film {
         cloneFilm.setDescription(getDescription());
         cloneFilm.setDuration(getDuration());
         cloneFilm.setReleaseDate(getReleaseDate());
+        cloneFilm.likes.addAll(likes);
         return cloneFilm;
     }
 }
