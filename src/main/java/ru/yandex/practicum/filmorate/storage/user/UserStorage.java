@@ -28,6 +28,7 @@ public interface UserStorage {
     List<User> getCommonFriends(Long userId, Long otherUserId);
 
     void likeFilmByUser(Long userId, Long filmId);
+
     void deleteLikeFilmByUser(Long userId, Long filmId);
 
 }

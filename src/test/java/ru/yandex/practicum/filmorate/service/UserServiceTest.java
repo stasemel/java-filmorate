@@ -37,22 +37,25 @@ class UserServiceTest {
     public void testAddFriend() {
         User user2 = createNewUser(2);
         service.createUser(user2);
-        service.addFriend(user.getId(),user2.getId());
-        assertEquals(1,service.getFriends(user.getId()).size(),"Не добавился друг к пользователю 1");
-        assertEquals(2,service.getFriends(user.getId()).getFirst().getId(),"Неправильно добавился друг к пользователю 1");
-        assertEquals(1,service.getFriends(user2.getId()).size(),"Не добавился друг к пользователю 2");
-    }@Test
+        service.addFriend(user.getId(), user2.getId());
+        assertEquals(1, service.getFriends(user.getId()).size(), "Не добавился друг к пользователю 1");
+        assertEquals(2, service.getFriends(user.getId()).getFirst().getId(), "Неправильно добавился друг к пользователю 1");
+        assertEquals(1, service.getFriends(user2.getId()).size(), "Не добавился друг к пользователю 2");
+    }
+
+    @Test
     public void testDeleteFriend() {
         User user2 = createNewUser(2);
         service.createUser(user2);
         User user3 = createNewUser(3);
         service.createUser(user3);
-        service.addFriend(user.getId(),user2.getId());
-        service.addFriend(user.getId(),user3.getId());
-        service.deleteFriend(user.getId(),user2.getId());
-        assertEquals(1,service.getFriends(user.getId()).size(),"Не удалися друг у пользователя 1");
-        assertEquals(3,service.getFriends(user.getId()).getFirst().getId(),"Неправильно добавился друг к пользователю 1");
+        service.addFriend(user.getId(), user2.getId());
+        service.addFriend(user.getId(), user3.getId());
+        service.deleteFriend(user.getId(), user2.getId());
+        assertEquals(1, service.getFriends(user.getId()).size(), "Не удалися друг у пользователя 1");
+        assertEquals(3, service.getFriends(user.getId()).getFirst().getId(), "Неправильно добавился друг к пользователю 1");
     }
+
     @Test
     public void testCommonFriends() {
         User user2 = createNewUser(2);
@@ -63,17 +66,17 @@ class UserServiceTest {
         service.createUser(user4);
         User user5 = createNewUser(5);
         service.createUser(user5);
-        service.addFriend(user.getId(),user2.getId());
-        service.addFriend(user3.getId(),user2.getId());
-        service.addFriend(user4.getId(),user2.getId());
-        service.addFriend(user3.getId(),user4.getId());
-        service.addFriend(user2.getId(),user5.getId());
-        service.addFriend(user3.getId(),user5.getId());
-        List<User> commonFriends=service.getCommonFriends(user.getId(), user3.getId());
-        List<User> commonFriends2=service.getCommonFriends(user2.getId(), user3.getId());
-        assertEquals(1,commonFriends.size(),"Не определились общие друзья");
-        assertEquals(2,commonFriends.getFirst().getId(),"Неправильно определились общие друзья");
-        assertEquals(2,commonFriends2.size(),"Не определились общие друзья юзеров 2 и 3");
+        service.addFriend(user.getId(), user2.getId());
+        service.addFriend(user3.getId(), user2.getId());
+        service.addFriend(user4.getId(), user2.getId());
+        service.addFriend(user3.getId(), user4.getId());
+        service.addFriend(user2.getId(), user5.getId());
+        service.addFriend(user3.getId(), user5.getId());
+        List<User> commonFriends = service.getCommonFriends(user.getId(), user3.getId());
+        List<User> commonFriends2 = service.getCommonFriends(user2.getId(), user3.getId());
+        assertEquals(1, commonFriends.size(), "Не определились общие друзья");
+        assertEquals(2, commonFriends.getFirst().getId(), "Неправильно определились общие друзья");
+        assertEquals(2, commonFriends2.size(), "Не определились общие друзья юзеров 2 и 3");
     }
 
 }
