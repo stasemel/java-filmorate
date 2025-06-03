@@ -3,119 +3,66 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Data
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private Map<Integer, Film> films = new HashMap<>();
+    private final FilmService service;
+
+    @Autowired
+    public FilmController(FilmService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public Collection<Film> findAll() {
-        return films.values();
+        return service.findAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Receive new film: {}", film);
-        try {
-            if (film.validate()) {
-                log.trace("Validate success");
-            }
-            if (isNotDuplicate(film)) {
-                log.trace("Is Not duplicated");
-            }
-        } catch (RuntimeException e) {
-            log.debug("POST error: {}, user: {}", e, film);
-            log.warn("POST error: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-        // сохраняем нового пользователя
-        addNewFilm(film);
-        log.info("Create film: {}", film);
-        return film;
+        return service.createFilm(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        log.debug("Receive update user {}", film);
-        if (film.getId() == null) {
-            log.warn("PUT error: empty id");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id должен быть указан");
-        }
-        if (!films.containsKey(film.getId())) {
-            log.warn("PUT error: film not found by id {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    String.format("Не найден пользователь с Id %d", film.getId()));
-        }
-        if ((film.getName() == null) && (film.getDuration() == null) && (film.getDescription() == null)
-                && (film.getReleaseDate() == null)) {
-            log.warn("PUT error: no data to change {}", film);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нет данных для изменения");
-        }
-        Film cloneFilm = films.get(film.getId()).cloneFilm();
-        if (film.getName() != null) cloneFilm.setName(film.getName());
-        if (film.getDescription() != null) cloneFilm.setDescription(film.getDescription());
-        if (film.getDuration() != null) cloneFilm.setDuration(film.getDuration());
-        if (film.getReleaseDate() != null) cloneFilm.setReleaseDate(film.getReleaseDate());
-
-        try {
-            if (cloneFilm.validate()) {
-                log.trace("Validate success");
-            }
-            if (isNotDuplicate(cloneFilm)) {
-                log.trace("Is not duplicated");
-            }
-        } catch (RuntimeException e) {
-            log.warn("PUT error: {}", e.getMessage());
-            log.debug("PUT error: {}, user: {}", e, film);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-        saveFilm(cloneFilm);
-        log.info("Update user: {}", cloneFilm);
-        return cloneFilm;
+        log.debug("Receive update film {}", film);
+        return service.updateFilm(film);
     }
 
-    private void addNewFilm(Film film) {
-        film.setId(getNextId());
-        saveFilm(film);
+    @PutMapping(value = {"/{filmId}/like/{userId}"})
+    public void likeFilmByUser(@PathVariable Long userId, @PathVariable Long filmId) {
+        log.debug("add like user {} to film {}", userId, filmId);
+        service.likeFilmByUser(userId, filmId);
     }
 
-    private void saveFilm(Film film) {
-        films.put(film.getId(), film);
+    @DeleteMapping(value = {"/{filmId}/like/{userId}"})
+    public void deleteLikeFilmByUser(@PathVariable Long userId, @PathVariable Long filmId) {
+        log.debug("delete like from user {} to film {}", userId, filmId);
+        service.deleteLikeFilmByUser(userId, filmId);
     }
 
-    private boolean isNotDuplicate(Film film) {
-        List<Film> duplicatedFilms = films.values().stream()
-                .filter(film1 ->
-                        film1.equals(film) && ((film.getId() == null) || (!film1.getId().equals(film.getId()))))
-                .toList();
-        if (!duplicatedFilms.isEmpty()) {
-            throw new ValidationException(String.format("Уже есть фильм '%s' в коллекции c id = %d",
-                    duplicatedFilms.getFirst().getName(),
-                    duplicatedFilms.getFirst().getId()));
-        }
-        return true;
+    @GetMapping(value = {"/popular"})
+    public List<Film> getPopulare(@RequestParam int count) {
+        log.debug("get popular {}", count);
+        return service.getMostPopular(count);
     }
-
-    private int getNextId() {
-        int currentMaxId = films.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
 }

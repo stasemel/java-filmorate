@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -17,7 +19,9 @@ public class Film {
     public static final int DESCRIPTION_MAX_LENGTH = 200;
     public static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     @EqualsAndHashCode.Exclude
-    private Integer id;
+    private Long id;
+
+    private final Set<Long> likes = new HashSet<>();
 
     @NotBlank(message = "Название фильма должно быть указано")
     @NotEmpty(message = "Название фильма должно быть указано")
@@ -35,14 +39,14 @@ public class Film {
         if ((getName() == null) || (getName().isBlank())) {
             throw new ValidationException("Название фильма должно быть указано");
         }
-        if ((getDescription() != null) && (getDescription().length() > DESCRIPTION_MAX_LENGTH)) {
+        if ((getDescription() != null) && (getDescription().length() > Film.DESCRIPTION_MAX_LENGTH)) {
             throw new ValidationException(String.format("Описание не должно превышать %d символов", 200));
         }
         if ((getDuration() != null) && (getDuration() < 0)) {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
-        if ((getReleaseDate() != null) && (getReleaseDate().isBefore(MIN_RELEASE_DATE))) {
-            throw new ValidationException(String.format("Дата релиза не может быть раньше %s", MIN_RELEASE_DATE));
+        if ((getReleaseDate() != null) && (getReleaseDate().isBefore(Film.MIN_RELEASE_DATE))) {
+            throw new ValidationException(String.format("Дата релиза не может быть раньше %s", Film.MIN_RELEASE_DATE));
         }
         return true;
     }
@@ -54,6 +58,7 @@ public class Film {
         cloneFilm.setDescription(getDescription());
         cloneFilm.setDuration(getDuration());
         cloneFilm.setReleaseDate(getReleaseDate());
+        cloneFilm.likes.addAll(likes);
         return cloneFilm;
     }
 }

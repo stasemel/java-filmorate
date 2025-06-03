@@ -7,10 +7,12 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
-    private Integer id;
+    private Long id;
 
     @Email(message = "Некорректный email")
     @NotEmpty(message = "Email должен быть указан")
@@ -23,6 +25,10 @@ public class User {
 
     @PastOrPresent(message = "Дата рождения не может быть больше текущей даты")
     private LocalDate birthday;
+
+    private final Set<Long> likedFilms = new HashSet<>();
+
+    private final Set<Long> friends = new HashSet<>();
 
     public boolean validate() {
         if ((getEmail() == null) || (getEmail().isBlank())) {
@@ -47,6 +53,8 @@ public class User {
         user.setBirthday(getBirthday());
         user.setEmail(getEmail());
         user.setName(getName());
+        user.friends.addAll(friends);
+        user.likedFilms.addAll(likedFilms);
         return user;
     }
 }

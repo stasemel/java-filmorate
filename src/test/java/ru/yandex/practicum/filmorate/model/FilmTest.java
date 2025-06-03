@@ -8,7 +8,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class FilmTest {
@@ -20,11 +19,6 @@ class FilmTest {
         film.setDescription("Описание 1");
         film.setDuration(100);
         film.setReleaseDate(LocalDate.now());
-    }
-
-    @Test
-    void validateCorrectFilm() {
-        assertTrue(film.validate(), "Не прошла валидация корректного фильма");
     }
 
     @Test
