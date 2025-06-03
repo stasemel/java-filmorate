@@ -100,45 +100,49 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = storage.getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalFriend = storage.getUserById(friendId);
         if (optionalFriend.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+            throw new NotFoundException(String.format(errorText, friendId));
         }
         storage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = storage.getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalFriend = storage.getUserById(friendId);
         if (optionalFriend.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+            throw new NotFoundException(String.format(errorText, friendId));
         }
         storage.deleteFriend(userId, friendId);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = storage.getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalOtherUser = storage.getUserById(otherUserId);
         if (optionalOtherUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", otherUserId));
+            throw new NotFoundException(String.format(errorText, otherUserId));
         }
         return storage.getCommonFriends(userId, otherUserId);
     }
 
     public List<User> getFriends(Long userId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = storage.getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         return storage.getFriends(userId);
     }

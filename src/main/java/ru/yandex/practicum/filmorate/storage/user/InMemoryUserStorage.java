@@ -83,13 +83,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalFriend = getUserById(friendId);
         if (optionalFriend.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+            throw new NotFoundException(String.format(errorText, friendId));
         }
         users.get(userId).getFriends().add(friendId);
         users.get(friendId).getFriends().add(userId);
@@ -97,13 +98,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalFriend = getUserById(friendId);
         if (optionalFriend.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", friendId));
+            throw new NotFoundException(String.format(errorText, friendId));
         }
         users.get(userId).getFriends().remove(friendId);
         users.get(friendId).getFriends().remove(userId);
@@ -120,13 +122,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
+        String errorText = "Не найден пользователь с id %d";
         Optional<User> optionalUser = getUserById(userId);
         if (optionalUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", userId));
+            throw new NotFoundException(String.format(errorText, userId));
         }
         Optional<User> optionalOtherUser = getUserById(otherUserId);
         if (optionalOtherUser.isEmpty()) {
-            throw new NotFoundException(String.format("Не найден пользователь с id %d", otherUserId));
+            throw new NotFoundException(String.format(errorText, otherUserId));
         }
         return optionalUser.get().getFriends().stream()
                 .filter(id -> optionalOtherUser.get().getFriends().contains(id))
