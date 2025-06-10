@@ -6,5 +6,4 @@ import lombok.Data;
 public class Rating {
     private int id;
     private String name;
-    private String description;
 }
