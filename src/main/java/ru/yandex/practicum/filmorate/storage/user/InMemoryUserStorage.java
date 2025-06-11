@@ -104,8 +104,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     private Optional<FriendShip> getSavedFriend(Long userId, Long friendId) {
         FriendShip friendShip = new FriendShip(userId, friendId);
-        List<FriendShip> list = friendShips.stream().
-                filter(f -> f.equals(friendShip))
+        List<FriendShip> list = friendShips.stream()
+                .filter(f -> f.equals(friendShip))
                 .toList();
         if (list.isEmpty()) return Optional.empty();
         return Optional.of(list.getFirst());
