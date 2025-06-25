@@ -6,8 +6,6 @@ import ru.yandex.practicum.filmorate.dto.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Instant;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
     public static UserDto mapToUserDto(User user) {
@@ -19,6 +17,7 @@ public class UserMapper {
         dto.setBirthday(user.getBirthday());
         return dto;
     }
+
     public static User mapToUser(NewUserRequest request) {
         User user = new User();
         user.setName(request.getName());

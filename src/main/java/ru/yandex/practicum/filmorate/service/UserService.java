@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SaveException;
@@ -18,10 +19,11 @@ import java.util.Optional;
 @Getter
 @Slf4j
 public class UserService {
+
     private final UserStorage storage;
 
     @Autowired
-    public UserService(UserStorage storage) {
+    public UserService(@Qualifier("dbUserStorage") UserStorage storage) {
         this.storage = storage;
     }
 

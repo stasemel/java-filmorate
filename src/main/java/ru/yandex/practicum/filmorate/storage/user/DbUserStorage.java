@@ -2,10 +2,8 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
-import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -13,10 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Repository
+@Repository("dbUserStorage")
 @Getter
-public class DBUserStorage implements UserStorage {
-    private final UserRepository userRepository = new UserRepository(new JdbcTemplate(), new UserRowMapper());
+public class DbUserStorage implements UserStorage {
+    private final UserRepository userRepository;
+
+    public DbUserStorage(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public Optional<User> createUser(User user) {
@@ -25,7 +27,7 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public Optional<User> updateUser(User user) {
-        return Optional.empty();
+        return Optional.of(userRepository.updateUser(user));
     }
 
     @Override
@@ -35,7 +37,7 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public Optional<User> getUserById(Long id) {
-        return Optional.empty();
+        return userRepository.getUserById(id);
     }
 
     @Override
@@ -50,31 +52,35 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-
+        if (!userRepository.isFriendshipExists(userId, friendId)) {
+            userRepository.insertFriend(userId, friendId);
+        }
     }
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
-
+        if (userRepository.isFriendshipExists(userId, friendId)) {
+            userRepository.deleteFriend(userId, friendId);
+        }
     }
 
     @Override
     public List<User> getFriends(Long userId) {
-        return null;
+        return userRepository.getFriendIdByUser(userId);
     }
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        return null;
+        return userRepository.getCommonFriendIdByUser(userId, otherUserId);
     }
 
     @Override
     public void likeFilmByUser(Long userId, Long filmId) {
-
+        //реализация в DBFilmStorage
     }
 
     @Override
     public void deleteLikeFilmByUser(Long userId, Long filmId) {
-
+        //реализация в DBFilmStorage
     }
 }

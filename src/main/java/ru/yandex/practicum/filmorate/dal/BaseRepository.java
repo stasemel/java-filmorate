@@ -29,16 +29,19 @@ public class BaseRepository<T> {
     protected List<T> findMany(String query, Object... params) {
         return jdbc.query(query, mapper, params);
     }
-    protected boolean delete(String query, long id) {
-        int rowsDeleted = jdbc.update(query, id);
+
+    protected boolean delete(String query, Object... params) {
+        int rowsDeleted = jdbc.update(query, params);
         return rowsDeleted > 0;
     }
+
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
             throw new InternalServerException("Не удалось обновить данные");
         }
     }
+
     protected long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -47,9 +50,10 @@ public class BaseRepository<T> {
             for (int idx = 0; idx < params.length; idx++) {
                 ps.setObject(idx + 1, params[idx]);
             }
-            return ps;}, keyHolder);
+            return ps;
+        }, keyHolder);
 
-        Long id = keyHolder.getKeyAs(Long.class);
+        Integer id = keyHolder.getKeyAs(Integer.class);
 
         // Возвращаем id нового пользователя
         if (id != null) {
@@ -58,4 +62,9 @@ public class BaseRepository<T> {
             throw new InternalServerException("Не удалось сохранить данные");
         }
     }
+
+    protected int countRows(String query, Object... params) {
+        return jdbc.queryForObject(query, Integer.class, params);
+    }
+
 }

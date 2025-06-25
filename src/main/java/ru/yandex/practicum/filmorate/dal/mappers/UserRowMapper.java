@@ -20,6 +20,6 @@ public class UserRowMapper implements RowMapper<User> {
         user.setLogin(rs.getString("login"));
         user.setName(rs.getString("name"));
         user.setBirthday(rs.getTimestamp("birthday").toLocalDateTime().toLocalDate());
-        return null;
+        return user;
     }
 }
