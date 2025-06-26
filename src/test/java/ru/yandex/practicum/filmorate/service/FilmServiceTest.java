@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.InMemoryGenreStorage;
 import ru.yandex.practicum.filmorate.storage.rating.InMemoryRatingStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
@@ -16,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FilmServiceTest {
     UserService userService = new UserService(new InMemoryUserStorage());
     RatingService ratingService = new RatingService(new InMemoryRatingStorage());
+    GenreService genreService = new GenreService(new InMemoryGenreStorage());
     FilmService service = new FilmService(
-            new InMemoryFilmStorage(), userService, ratingService);
+            new InMemoryFilmStorage(), userService, ratingService, genreService);
 
     Film film = new Film();
     User user = new User();

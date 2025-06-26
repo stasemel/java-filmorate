@@ -8,6 +8,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.User;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +24,8 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        userRepository.delete("DELETE FROM friendships");
+        userRepository.delete("DELETE FROM users");
         String queryUserCreate = """
                 INSERT INTO users ("name", "email", "login","birthday")
                 VALUES ('user1','user1@mail.ru','login1','2019-12-31'),
@@ -33,8 +38,11 @@ class UserRepositoryTest {
 
     @Test
     void insertFriend() {
-        userRepository.insertFriend(1L, 4L);
-        boolean isFriendExists = userRepository.isFriendshipExists(1L, 4L);
+        List<User> list = (List<User>) userRepository.findAll();
+        Long id1 = list.get(1).getId();
+        Long id2 = list.get(2).getId();
+        userRepository.insertFriend(id1, id2);
+        boolean isFriendExists = userRepository.isFriendshipExists(id1, id2);
         assertTrue(isFriendExists, "Не создалась запись о дружбе");
     }
 

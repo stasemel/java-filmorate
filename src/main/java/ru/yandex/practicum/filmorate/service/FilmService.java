@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SaveException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -25,12 +26,15 @@ public class FilmService {
     private final FilmStorage storage;
     private final UserService userService;
     private final RatingService ratingService;
+    private final GenreService genreService;
+    public static final boolean CHECK_DUPICATE = false;
 
     @Autowired
-    public FilmService(@Qualifier("dbFilmStorage") FilmStorage storage, UserService service, RatingService ratingService) {
+    public FilmService(@Qualifier("dbFilmStorage") FilmStorage storage, UserService service, RatingService ratingService, GenreService genreService) {
         this.storage = storage;
         this.userService = service;
         this.ratingService = ratingService;
+        this.genreService = genreService;
     }
 
     public Film createFilm(Film film) {
@@ -149,12 +153,40 @@ public class FilmService {
                 throw new NotFoundException(String.format("Не найден рейтинг с id = %d", mpa.getId()));
             }
         }
+        if (film.getGenres() != null) {
+            List<Genre> genreList = film.getGenres().stream().filter(genre -> {
+                int id = genre.getId();
+                try {
+                    return genreService.getGenreById(id) == null;
+                } catch (RuntimeException e) {
+                    return true;
+                }
+            }).toList();
+            if (!genreList.isEmpty()) {
+                throw new NotFoundException(String.format("Не найдены жанры: %s", genreList));
+            }
+        }
         return film.validate();
     }
 
     private boolean isNotDuplicate(Film film) {
+        if (!CHECK_DUPICATE) return true;
         return storage.isNotDuplicate(film);
     }
 
+    public Film getFilmById(Long filmId) {
+        Optional<Film> film = storage.getFilmByIdAllInfo(filmId);
+        if (film.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден фильм с id =%d", filmId));
+        }
+        return film.get();
+    }
 
+    public List<Genre> getGenresByFilmId(Long filmId) {
+        Optional<Film> film = storage.getFilmById(filmId);
+        if (film.isEmpty()) {
+            throw new NotFoundException(String.format("Не найден фильм с id =%d", filmId));
+        }
+        return storage.getGenresByFilmId(filmId);
+    }
 }

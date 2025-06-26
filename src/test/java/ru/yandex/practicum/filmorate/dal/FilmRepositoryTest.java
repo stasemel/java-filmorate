@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Import({FilmRepository.class, FilmRowMapper.class})
 class FilmRepositoryTest {
     private final FilmRepository filmRepository;
-    private Film film = new Film();
+    private final Film film = new Film();
 
     @Test
     public void testCreateFilm() {
@@ -30,7 +31,8 @@ class FilmRepositoryTest {
         film.setDuration(100);
         film.setReleaseDate(LocalDate.now());
         filmRepository.save(film);
-        assertEquals(1L, film.getId(), "Не создался фильм");
+        List<Film> list = (List<Film>) filmRepository.findAll();
+        assertEquals(list.getLast().getId(), film.getId(), "Не создался фильм");
     }
 
     @Test

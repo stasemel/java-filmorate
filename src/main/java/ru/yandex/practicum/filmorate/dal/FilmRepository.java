@@ -6,9 +6,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,20 @@ public class FilmRepository extends BaseRepository {
         );
         film.setId(id);
         log.trace("Call SQL {} for film {}, return id = {}", query, film, id);
+        saveGenreForFilm(film);
         return film;
+    }
+
+    private void saveGenreForFilm(Film film) {
+        if (!film.getGenres().isEmpty()) {
+            delete("DELETE FROM film_genres WHERE \"film_id\"=?", film.getId());
+            log.trace("Delete all genres fro film {}", film);
+            String genreQuery = "INSERT INTO film_genres (\"film_id\",\"genre_id\") VALUES (?,?)";
+            for (Genre genre : film.getGenres()) {
+                update(genreQuery, film.getId(), genre.getId());
+                log.trace("Save genre {} for film {}", genre.getId(), film.getId());
+            }
+        }
     }
 
     public Film updateFilm(Film film) {
@@ -57,19 +72,18 @@ public class FilmRepository extends BaseRepository {
         LocalDate releaseDate = film.getReleaseDate();
         Integer duration = film.getDuration();
         Long id = film.getId();
-        List<Film> duplicatedFilms;
         String query = "SELECT * FROM films WHERE \"name\"=? AND \"release_date\"=? AND \"duration\"=?";
         if (id != null) {
             query += " AND NOT (\"id\" = ?)";
-            duplicatedFilms = findMany(query, name, releaseDate, duration, id);
-            if (duplicatedFilms.size() > 0) {
+            List<Film> duplicatedFilms = findMany(query, name, releaseDate, duration, id);
+            if (!duplicatedFilms.isEmpty()) {
                 throw new ValidationException(String.format("Уже есть фильм '%s' в коллекции c id = %d",
                         name,
                         duplicatedFilms.getFirst().getId()));
             }
         } else {
-            duplicatedFilms = findMany(query, name, releaseDate, duration);
-            if (duplicatedFilms.size() > 0) {
+            List<Film> duplicatedFilms = findMany(query, name, releaseDate, duration);
+            if (!duplicatedFilms.isEmpty()) {
                 throw new ValidationException(String.format("Уже есть фильм '%s' в коллекции c id = %d",
                         name,
                         duplicatedFilms.getFirst().getId()));
@@ -105,12 +119,22 @@ public class FilmRepository extends BaseRepository {
     public void likeFilm(Long userId, Long filmId) {
         String query = "MERGE INTO film_likes key (\"film_id\",\"user_id\") VALUES(?,?)";
         update(query, filmId, userId);
-        log.trace("Call SQL {} for userId {} and filmId {}. Result: {}", query, userId, filmId);
+        log.trace("Call SQL {} for userId {} and filmId {}.", query, userId, filmId);
     }
 
     public void deleteLike(Long userId, Long filmId) {
         String query = "DELETE FROM film_likes WHERE \"film_id\"=? AND \"user_id\" = ?";
         boolean isDeleted = delete(query, filmId, userId);
         log.trace("Call SQL {} for userId {} and filmId {}. Result: {}", query, userId, filmId, isDeleted);
+    }
+
+    public List<Genre> getGenresByFilmId(Long filmId) {
+        List<Genre> genreList = new ArrayList<>();
+        String query = "SELECT DISTINCT \"genre_id\" FROM film_genres WHERE \"film_id\" = ?";
+        List<Integer> list = jdbc.queryForList(query, Integer.class, filmId);
+        for (int id : list) {
+            genreList.add(new Genre(id, null));
+        }
+        return genreList;
     }
 }
