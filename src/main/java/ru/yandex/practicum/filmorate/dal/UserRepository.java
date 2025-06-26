@@ -34,16 +34,32 @@ public class UserRepository extends BaseRepository<User> {
     public boolean isNotDuplicate(User user) {
         String email = user.getEmail();
         String login = user.getLogin();
+        Long id = user.getId();
         String query = "SELECT * FROM users WHERE \"email\" = ?";
-        if (findOne(query, email).isPresent()) {
-            throw new ValidationException(String.format("Пользователь с email %s уже существует", email));
+        if (id != null) {
+            query += " AND NOT (\"id\" = ?)";
+            if (findMany(query, email, id).size() > 0) {
+                throw new ValidationException(String.format("Пользователь с email %s уже существует", email));
+            }
+        } else {
+            if (findMany(query, email).size() > 0) {
+                throw new ValidationException(String.format("Пользователь с email %s уже существует", email));
+            }
         }
         log.trace("Called SQL {} for user {}", query, user);
+
         String queryLogin = "SELECT * FROM users WHERE \"login\" = ?";
-        if (findOne(queryLogin, login).isPresent()) {
-            throw new ValidationException(String.format("Пользователь с логином %s уже существует", login));
+        if (id != null) {
+            queryLogin += " AND NOT (\"id\" = ?)";
+            if (findMany(queryLogin, login, id).size() > 0) {
+                throw new ValidationException(String.format("Пользователь с логином %s уже существует", login));
+            }
+        } else {
+            if (findMany(queryLogin, login).size() > 0) {
+                throw new ValidationException(String.format("Пользователь с логином %s уже существует", login));
+            }
         }
-        log.trace("Called SQL {} for user {}", query, user);
+        log.trace("Called SQL {} for user {}", queryLogin, user);
         return true;
     }
 
@@ -62,7 +78,7 @@ public class UserRepository extends BaseRepository<User> {
 
 
     public User updateUser(User user) {
-        String query = "UPDATE users SET \"username\" = ?, \"email\" = ?, \"login\" = ?, \"birthday\" = ? WHERE \"id\" = ?";
+        String query = "UPDATE users SET \"name\" = ?, \"email\" = ?, \"login\" = ?, \"birthday\" = ? WHERE \"id\" = ?";
         update(
                 query,
                 user.getName(),
@@ -117,6 +133,7 @@ public class UserRepository extends BaseRepository<User> {
                            SELECT "friend_id" FROM FRIENDSHIPS WHERE "user_id" = ?
                            ));
                 """;
+        log.trace("Will call SQL {} for id {}", query, userId, otherUserId);
         return findMany(query, userId, otherUserId);
     }
 }

@@ -25,22 +25,22 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public Optional<Film> updateFilm(Film film) {
-        return Optional.empty();
+        return Optional.of(filmRepository.updateFilm(film));
     }
 
     @Override
     public boolean isNotDuplicate(Film film) {
-        return false;
+        return filmRepository.isNotDuplicate(film);
     }
 
     @Override
     public Collection<Film> findAll() {
-        return null;
+        return filmRepository.findAll();
     }
 
     @Override
     public Optional<Film> getFilmById(Long id) {
-        return Optional.empty();
+        return filmRepository.getFimById(id);
     }
 
     @Override
@@ -50,16 +50,16 @@ public class DbFilmStorage implements FilmStorage {
 
     @Override
     public void likeFilmByUser(Long userId, Long filmId) {
-
+        filmRepository.likeFilm(userId, filmId);
     }
 
     @Override
     public void deleteLikeFilmByUser(Long userId, Long filmId) {
-
+        filmRepository.deleteLike(userId, filmId);
     }
 
     @Override
     public List<Film> getMostPopular(int count) {
-        return null;
+        return filmRepository.getMostPopular(count);
     }
 }
