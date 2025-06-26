@@ -12,9 +12,9 @@ public class RatingRowMapper implements RowMapper<Rating> {
 
     @Override
     public Rating mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Rating rating=new Rating();
-        rating.setId(rs.getInt("rating_id"));
-        rating.setId(rs.getInt("rating_name"));
+        Rating rating = new Rating();
+        rating.setId(rs.getInt("id"));
+        rating.setName(rs.getString("name"));
         return rating;
     }
 }

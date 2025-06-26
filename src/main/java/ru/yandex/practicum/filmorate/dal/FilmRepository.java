@@ -6,13 +6,12 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -22,12 +21,17 @@ public class FilmRepository extends BaseRepository {
     }
 
     public Film save(Film film) {
-        String query = "INSERT INTO films (\"name\",\"description\",\"release_date\",\"duration\") VALUES (?,?,?,?)";
+        String query = "INSERT INTO films (\"name\",\"description\",\"release_date\",\"duration\",\"rating_id\") VALUES (?,?,?,?,?)";
+        Rating mpa = film.getMpa();
+        Integer mpaId = null;
+        if (mpa != null) mpaId = mpa.getId();
+
         Long id = insert(query,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
-                film.getDuration()
+                film.getDuration(),
+                mpaId
         );
         film.setId(id);
         log.trace("Call SQL {} for film {}, return id = {}", query, film, id);

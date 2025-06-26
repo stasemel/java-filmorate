@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SaveException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -23,11 +24,13 @@ public class FilmService {
 
     private final FilmStorage storage;
     private final UserService userService;
+    private final RatingService ratingService;
 
     @Autowired
-    public FilmService(@Qualifier("dbFilmStorage") FilmStorage storage, UserService service) {
+    public FilmService(@Qualifier("dbFilmStorage") FilmStorage storage, UserService service, RatingService ratingService) {
         this.storage = storage;
         this.userService = service;
+        this.ratingService = ratingService;
     }
 
     public Film createFilm(Film film) {
@@ -42,6 +45,9 @@ public class FilmService {
             log.debug("Create film validation error: {}, user: {}", e, film);
             log.warn("Create film validation error: {}", e.getMessage());
             throw new ValidationException(e.getMessage());
+        } catch (NotFoundException e) {
+            log.warn("Create film not found error {}", e.getMessage());
+            throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {
             log.warn("Create film runtime error {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
@@ -88,6 +94,9 @@ public class FilmService {
             if (isNotDuplicate(cloneFilm)) {
                 log.trace("Is not duplicated");
             }
+        } catch (NotFoundException e) {
+            log.warn("Update film not found error {}", e.getMessage());
+            throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {
             log.warn("Update validation error: {}", e.getMessage());
             log.debug("Update validation error: {}, user: {}", e, film);
@@ -134,6 +143,12 @@ public class FilmService {
     }
 
     private boolean validate(Film film) {
+        Rating mpa = film.getMpa();
+        if (mpa != null) {
+            if (ratingService.getRatingById(mpa.getId()) == null) {
+                throw new NotFoundException(String.format("Не найден рейтинг с id = %d", mpa.getId()));
+            }
+        }
         return film.validate();
     }
 

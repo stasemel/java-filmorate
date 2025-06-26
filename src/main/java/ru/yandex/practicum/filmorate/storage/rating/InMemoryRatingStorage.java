@@ -27,7 +27,9 @@ public class InMemoryRatingStorage implements RatingStorage {
 
     @Override
     public Optional<Rating> getRatingById(Integer id) {
-        if(ratings.containsKey(id)) {return Optional.of(ratings.get(id));}
+        if (ratings.containsKey(id)) {
+            return Optional.of(ratings.get(id));
+        }
         return Optional.empty();
     }
 
