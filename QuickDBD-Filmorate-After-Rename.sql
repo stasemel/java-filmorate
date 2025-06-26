@@ -7,7 +7,7 @@ CREATE TABLE "films" (
     "id"  SERIAL  NOT NULL,
     "name" varchar(255)   NOT NULL,
     "description" varchar(200)   NULL,
-    "releaseDate" date   NULL,
+    "release_date" date   NULL,
     "duration" int   NULL,
     "rating_id" int   NOT NULL,
     CONSTRAINT "pk_films" PRIMARY KEY (
