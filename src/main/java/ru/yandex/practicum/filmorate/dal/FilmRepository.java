@@ -23,7 +23,8 @@ public class FilmRepository extends BaseRepository {
     }
 
     public Film save(Film film) {
-        String query = "INSERT INTO films (\"name\",\"description\",\"release_date\",\"duration\",\"rating_id\") VALUES (?,?,?,?,?)";
+        String query = buildSQLInsert("films",
+                new String[]{"\"name\"", "\"description\"", "\"release_date\"", "\"duration\"", "\"rating_id\""});
         Rating mpa = film.getMpa();
         Integer mpaId = null;
         if (mpa != null) mpaId = mpa.getId();
@@ -43,9 +44,9 @@ public class FilmRepository extends BaseRepository {
 
     private void saveGenreForFilm(Film film) {
         if (!film.getGenres().isEmpty()) {
-            delete("DELETE FROM film_genres WHERE \"film_id\"=?", film.getId());
+            delete(buildSQLDelete("film_genres", new String[]{"\"film_id\"=?"}), film.getId());
             log.trace("Delete all genres fro film {}", film);
-            String genreQuery = "INSERT INTO film_genres (\"film_id\",\"genre_id\") VALUES (?,?)";
+            String genreQuery = buildSQLInsert("film_genres", new String[]{"\"film_id\"", "\"genre_id\""});
             for (Genre genre : film.getGenres()) {
                 update(genreQuery, film.getId(), genre.getId());
                 log.trace("Save genre {} for film {}", genre.getId(), film.getId());
@@ -54,7 +55,9 @@ public class FilmRepository extends BaseRepository {
     }
 
     public Film updateFilm(Film film) {
-        String query = "UPDATE films SET \"name\" = ?, \"description\" = ?, \"release_date\" = ?, \"duration\" = ? WHERE \"id\" = ?";
+        String query = buildSQLUpdate("films",
+                new String[]{"\"name\" = ?", "\"description\" = ?", "\"release_date\" = ?", "\"duration\" = ?"},
+                new String[]{"\"id\" = ?"});
         update(
                 query,
                 film.getName(),
@@ -72,7 +75,10 @@ public class FilmRepository extends BaseRepository {
         LocalDate releaseDate = film.getReleaseDate();
         Integer duration = film.getDuration();
         Long id = film.getId();
-        String query = "SELECT * FROM films WHERE \"name\"=? AND \"release_date\"=? AND \"duration\"=?";
+        String query = buildSQLSelect("films",
+                new String[]{"*"},
+                new String[]{"\"name\"=?", "\"release_date\"=?", "\"duration\"=?"},
+                new String[]{});
         if (id != null) {
             query += " AND NOT (\"id\" = ?)";
             List<Film> duplicatedFilms = findMany(query, name, releaseDate, duration, id);
@@ -93,31 +99,31 @@ public class FilmRepository extends BaseRepository {
     }
 
     public Collection<Film> findAll() {
-        return findMany("SELECT * FROM films");
+        return findMany(
+                buildSQLSelect("films")
+        );
     }
 
     public Optional<Film> getFimById(Long id) {
-        return findOne("SELECT * FROM films WHERE \"id\" =?", id);
+        return findOne(
+                buildSQLSelect("films", new String[]{"*"}, new String[]{"\"id\" =?"}, new String[]{}),
+                id
+        );
     }
 
     public List<Film> getMostPopular(int count) {
         if (count == 0) count = 10;
-        String query = """
-                SELECT
-                    f.*
-                FROM
-                    FILMS AS f
-                        LEFT OUTER JOIN FILM_LIKES AS fs ON f."id" = fs."film_id"
-                GROUP BY
-                    f."id"
-                ORDER BY count(fs."user_id") DESC
-                LIMIT ?
-                """;
+        String query = buildSQLSelect("films AS f LEFT OUTER JOIN FILM_LIKES AS fs ON f.\"id\" = fs.\"film_id\" GROUP BY f.\"id\"",
+                new String[]{"f.*"},
+                new String[]{},
+                new String[]{"count(fs.\"user_id\") DESC"}) + " LIMIT ?";
         return findMany(query, count);
     }
 
     public void likeFilm(Long userId, Long filmId) {
-        String query = "MERGE INTO film_likes key (\"film_id\",\"user_id\") VALUES(?,?)";
+        String query = buildSQLMerge("film_likes",
+                new String[]{"\"film_id\"", "\"user_id\""},
+                new String[]{"?", "?"});
         update(query, filmId, userId);
         log.trace("Call SQL {} for userId {} and filmId {}.", query, userId, filmId);
     }
@@ -130,7 +136,10 @@ public class FilmRepository extends BaseRepository {
 
     public List<Genre> getGenresByFilmId(Long filmId) {
         List<Genre> genreList = new ArrayList<>();
-        String query = "SELECT DISTINCT \"genre_id\" FROM film_genres WHERE \"film_id\" = ?";
+        String query = buildSQLSelect("film_genres",
+                new String[]{"DISTINCT \"genre_id\""},
+                new String[]{"\"film_id\" = ?"},
+                new String[]{});
         List<Integer> list = jdbc.queryForList(query, Integer.class, filmId);
         for (int id : list) {
             genreList.add(new Genre(id, null));

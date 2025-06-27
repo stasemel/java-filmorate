@@ -10,10 +10,10 @@ import java.sql.SQLException;
 @Component
 public class GenreRowMapper implements RowMapper<Genre> {
     @Override
-    public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Genre mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Genre genre = new Genre();
-        genre.setId(rs.getInt("id"));
-        genre.setName(rs.getString("name"));
+        genre.setId(resultSet.getInt("id"));
+        genre.setName(resultSet.getString("name"));
         return genre;
     }
 }

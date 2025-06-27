@@ -17,12 +17,12 @@ public class GenreRepository extends BaseRepository {
     }
 
     public Optional<Genre> getGenreById(Integer id) {
-        String query = "SELECT * FROM genres WHERE \"id\" = ?";
+        String query = buildSQLSelect("genres", new String[]{"*"}, new String[]{"\"id\" = ?"}, new String[]{});
         return findOne(query, id);
     }
 
     public Collection<Genre> findAll() {
-        String query = "SELECT * FROM genres ORDER BY \"id\"";
+        String query = buildSQLSelect("genres", new String[]{"*"}, new String[]{}, new String[]{"\"id\""});
         return findMany(query);
     }
 }

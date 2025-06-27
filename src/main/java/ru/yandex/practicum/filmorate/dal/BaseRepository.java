@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,4 +68,67 @@ public class BaseRepository<T> {
         return jdbc.queryForObject(query, Integer.class, params);
     }
 
+    protected String buildSQLSelect(String tableName) {
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName);
+        return query.toString();
+    }
+
+    protected String buildSQLSelect(String tableName, String[] columns, String[] wheres, String[] orders) {
+        StringBuilder query = new StringBuilder("SELECT ");
+        query.append(String.join(", ", columns));
+        query.append(" FROM ");
+        query.append(tableName);
+        if (wheres.length > 0) {
+            query.append(" WHERE ");
+            query.append(String.join(" AND ", wheres));
+        }
+        if (orders.length > 0) {
+            query.append(" ORDER BY ");
+            query.append(String.join(", ", orders));
+        }
+        return query.toString();
+    }
+
+    protected String buildSQLUpdate(String tableName, String[] fields, String[] wheres) {
+        StringBuilder query = new StringBuilder("UPDATE ");
+        query.append(tableName);
+        query.append(" SET ");
+        query.append(String.join(", ", fields));
+        query.append(" WHERE ");
+        query.append(String.join(" AND ", wheres));
+        return query.toString();
+    }
+
+    protected String buildSQLDelete(String tableName, String[] wheres) {
+        StringBuilder query = new StringBuilder("DELETE FROM ");
+        query.append(tableName);
+        query.append(" WHERE ");
+        query.append(String.join(" AND ", wheres));
+        return query.toString();
+    }
+
+    protected String buildSQLInsert(String tableName, String[] fields) {
+        StringBuilder query = new StringBuilder("INSERT INTO ");
+        query.append(tableName);
+        query.append(" (");
+        query.append(String.join(", ", fields));
+        query.append(" ) VALUES (");
+        String[] values = new String[fields.length];
+        Arrays.fill(values, "?");
+        query.append(String.join(", ", values));
+        query.append(" )");
+        return query.toString();
+    }
+
+    protected String buildSQLMerge(String tableName, String[] fields, String[] values) {
+        StringBuilder query = new StringBuilder("MERGE INTO ");
+        query.append(tableName);
+        query.append(" key (");
+        query.append(String.join(", ", fields));
+        query.append(" ) VALUES (");
+        query.append(String.join(", ", values));
+        query.append(" )");
+        return query.toString();
+    }
 }

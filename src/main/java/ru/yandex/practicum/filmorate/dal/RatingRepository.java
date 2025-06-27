@@ -18,12 +18,12 @@ public class RatingRepository extends BaseRepository {
     }
 
     public Optional<Rating> getRaingsById(Integer id) {
-        String query = "SELECT * FROM RATINGS WHERE \"id\" = ?";
+        String query = buildSQLSelect("ratings", new String[]{"*"}, new String[]{"\"id\" = ?"}, new String[]{});
         return findOne(query, id);
     }
 
     public Collection<Rating> getAll() {
-        String query = "SELECT * FROM ratings ORDER BY \"id\"";
+        String query = buildSQLSelect("ratings", new String[]{"*"}, new String[]{}, new String[]{"\"id\""});
         return findMany(query);
     }
 }
