@@ -65,4 +65,10 @@ public class FilmController {
         log.debug("get popular {}", count);
         return service.getMostPopular(count);
     }
+
+    @GetMapping(value = "/{filmId}")
+    public Film getFilmById(@PathVariable Long filmId) {
+        log.debug("get film by id {}", filmId);
+        return service.getFilmById(filmId);
+    }
 }

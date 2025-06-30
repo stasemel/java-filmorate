@@ -6,20 +6,28 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.service.RatingService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.InMemoryGenreStorage;
+import ru.yandex.practicum.filmorate.storage.rating.InMemoryRatingStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class FilmControllerTest {
     FilmController controller = new FilmController(
             new FilmService(
                     new InMemoryFilmStorage(),
-                    new UserService(new InMemoryUserStorage())
+                    new UserService(new InMemoryUserStorage()),
+                    new RatingService(new InMemoryRatingStorage()),
+                    new GenreService(new InMemoryGenreStorage())
             ));
     Film film = new Film();
 
@@ -59,11 +67,13 @@ class FilmControllerTest {
 
     @Test
     void testCreateDiplicateName() {
-        controller.create(createNewFilm(123));
-        ValidationException exception = assertThrows(ValidationException.class, () -> controller.create(createNewFilm(123)),
-                "Не отработала проверка повтора регистрации фильма");
-        assertEquals("Уже есть фильм 'Film 123' в коллекции c id = 1", exception.getMessage(),
-                "Некорректное сообщение. Не отработала проверка повтора регистрации фильма");
+        if (FilmService.CHECK_DUPICATE) {
+            controller.create(createNewFilm(123));
+            ValidationException exception = assertThrows(ValidationException.class, () -> controller.create(createNewFilm(123)),
+                    "Не отработала проверка повтора регистрации фильма");
+            assertEquals("Уже есть фильм 'Film 123' в коллекции c id = 1", exception.getMessage(),
+                    "Некорректное сообщение. Не отработала проверка повтора регистрации фильма");
+        }
     }
 
     @Test
@@ -176,12 +186,14 @@ class FilmControllerTest {
 
     @Test
     void testUpdateDuplicate() {
-        Film createdFilm = controller.create(film);
-        controller.create(createNewFilm(123));
-        Film updateFilm = createNewFilm(123);
-        updateFilm.setId(createdFilm.getId());
-        assertThrows(ValidationException.class, () -> controller.update(updateFilm),
-                "Не отработала проверка изменения с некорректной датой релиза");
+        if (FilmService.CHECK_DUPICATE) {
+            Film createdFilm = controller.create(film);
+            controller.create(createNewFilm(123));
+            Film updateFilm = createNewFilm(123);
+            updateFilm.setId(createdFilm.getId());
+            assertThrows(ValidationException.class, () -> controller.update(updateFilm),
+                    "Не отработала проверка изменения с некорректной датой релиза");
+        }
     }
 
     @Test

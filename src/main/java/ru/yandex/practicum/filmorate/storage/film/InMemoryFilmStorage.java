@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Repository
+@Repository("memoryFilmStorage")
 @ToString
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
@@ -74,6 +76,18 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (count == 0) count = 10;
         Comparator<Film> likeComparator = (f1, f2) -> f2.getLikes().size() - f1.getLikes().size();
         return films.values().stream().sorted(likeComparator).map(Film::cloneFilm).limit(count).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Genre> getGenresByFilmId(Long filmId) {
+        Optional<Film> film = getFilmById(filmId);
+        if (film.isEmpty()) return new ArrayList<>();
+        return film.get().getGenres().stream().toList();
+    }
+
+    @Override
+    public Optional<Film> getFilmByIdAllInfo(Long filmId) {
+        return getFilmById(filmId);
     }
 
     @Override

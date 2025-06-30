@@ -5,22 +5,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendShip;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository
+@Repository("memoryUserStorage")
 @Getter
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
     private final Map<String, User> emails = new HashMap<>();
     private final Map<String, User> logins = new HashMap<>();
+    private final Set<FriendShip> friendShips = new HashSet<>();
 
     @Override
     public Optional<User> createUser(User user) {
@@ -92,6 +96,27 @@ public class InMemoryUserStorage implements UserStorage {
         if (optionalFriend.isEmpty()) {
             throw new NotFoundException(String.format(errorText, friendId));
         }
+        if (getSavedFriend(userId, friendId).isEmpty()) {
+            friendShips.add(new FriendShip(userId, friendId));
+            confirmFriend(userId, friendId);
+        }
+    }
+
+    private Optional<FriendShip> getSavedFriend(Long userId, Long friendId) {
+        FriendShip friendShip = new FriendShip(userId, friendId);
+        List<FriendShip> list = friendShips.stream()
+                .filter(f -> f.equals(friendShip))
+                .toList();
+        if (list.isEmpty()) return Optional.empty();
+        return Optional.of(list.getFirst());
+    }
+
+    public void confirmFriend(Long userId, Long friendId) {
+        Optional<FriendShip> optionalFriend = getSavedFriend(userId, friendId);
+        if (optionalFriend.isEmpty()) {
+            throw new NotFoundException("Не найдена запись о добавлении в друзья");
+        }
+        optionalFriend.get().setConfirm(true);
         users.get(userId).getFriends().add(friendId);
         users.get(friendId).getFriends().add(userId);
     }
@@ -103,15 +128,17 @@ public class InMemoryUserStorage implements UserStorage {
         if (optionalUser.isEmpty()) {
             throw new NotFoundException(String.format(errorText, userId));
         }
-        Optional<User> optionalFriend = getUserById(friendId);
-        if (optionalFriend.isEmpty()) {
+        Optional<User> optionalUserFriend = getUserById(friendId);
+        if (optionalUserFriend.isEmpty()) {
             throw new NotFoundException(String.format(errorText, friendId));
         }
+        Optional<FriendShip> optionalFriend = getSavedFriend(userId, friendId);
+        if (optionalFriend.isEmpty()) return;
+        friendShips.remove(optionalFriend.get());
         users.get(userId).getFriends().remove(friendId);
         users.get(friendId).getFriends().remove(userId);
     }
 
-    @Override
     public List<User> getFriends(Long userId) {
         Optional<User> optionalUser = getUserById(userId);
         if (optionalUser.isEmpty()) {

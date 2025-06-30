@@ -23,6 +23,9 @@ public class Film {
 
     private final Set<Long> likes = new HashSet<>();
 
+    private final Set<Genre> genres = new HashSet<>();
+    private Rating mpa;
+
     @NotBlank(message = "Название фильма должно быть указано")
     @NotEmpty(message = "Название фильма должно быть указано")
     private String name;
@@ -59,6 +62,8 @@ public class Film {
         cloneFilm.setDuration(getDuration());
         cloneFilm.setReleaseDate(getReleaseDate());
         cloneFilm.likes.addAll(likes);
+        cloneFilm.setMpa(getMpa());
+        cloneFilm.genres.addAll(getGenres());
         return cloneFilm;
     }
 }
